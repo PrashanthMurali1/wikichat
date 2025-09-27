@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-import requests
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from groq import Groq
 import google.generativeai as genai
 import os
-from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 
 app = FastAPI()
@@ -49,27 +50,6 @@ def search_wikipedia(query: str):
 
     return extract.get("extract", "No summary available."), page_url
 
-
-@app.get("/chat")
-def chat(query: str):
-    content, link = search_wikipedia(query)
-    prompt = f"""
-    You are a helpful assistant. Answer the question based ONLY on the following Wikipedia content.
-    If not enough info is found, say so. Always provide the page link at the end.
-
-    Wikipedia Content:
-    {content}
-
-    Question: {query}
-    """
-
-    resp = client.chat.completions.create(
-        model="llama-3.1-8b-instant",   # or llama-3.1-8b-instant for cheaper/faster
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    return {"answer": resp.choices[0].message.content}
-
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     return Response(status_code=204)  # empty response, no content
@@ -105,15 +85,15 @@ def smart_qa(query: str):
         "source": page_url
     }
 
-@app.get("/qa_with_page")
-def qa_with_page(query: str):
+@app.get("/chat")
+def chat(query: str):
     # Step 1: Ask Gemini to answer + provide page title
     prompt = f"""
     The user asked: "{query}"
 
     Your job:
-    1. Answer the question clearly in a paragraph or two.
-    2. On a new line, respond with the EXACT Wikipedia page title that best matches the answer.
+    1. Answer the question clearly in a paragraph or two. 
+    3. On a new line, respond with the EXACT Wikipedia page title that best matches the answer.
 
     Format strictly like this:
     ANSWER: <your answer>

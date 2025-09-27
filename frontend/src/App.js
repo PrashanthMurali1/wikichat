@@ -12,7 +12,7 @@ function App() {
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/qa_with_page?query=${encodeURIComponent(query)}`
+        `http://127.0.0.1:8000/chat?query=${encodeURIComponent(query)}`
       );
       const data = await res.json();
       setResult(data);
