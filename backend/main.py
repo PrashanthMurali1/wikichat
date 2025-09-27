@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+import faiss, pickle
 from groq import Groq
 import google.generativeai as genai
 import os
 import requests
+from sentence_transformers import SentenceTransformer
 
 app = FastAPI()
 app.add_middleware(
@@ -18,6 +20,17 @@ app.add_middleware(
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+# Vector index and metadata file
+BASE_DIR = os.path.dirname(__file__)  # backend/
+INDEX_FILE = os.path.join(BASE_DIR, "vector.index")
+META_FILE = os.path.join(BASE_DIR, "metadata.pkl")
+
+
+index = faiss.read_index(INDEX_FILE)
+with open(META_FILE, "rb") as f:
+    metadata = pickle.load(f)
+embedder = SentenceTransformer("all-MiniLM-L6-v2", cache_folder="./models")
+
 # Wikipedia APIs
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 WIKI_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/"
@@ -26,7 +39,7 @@ WIKI_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/"
 async def favicon():
     return Response(status_code=204)  # empty response, no content
 
-
+#Uses either groq or gemini to answer the question
 @app.get("/chat")
 def qa(query: str, engine: str = "gemini"):
     """
@@ -148,3 +161,29 @@ def timeline(query: str):
         timeline.append(current)
 
     return {"timeline": timeline}
+
+@app.get("/rag")
+def rag(query: str):
+    q_embed = embedder.encode([query])
+    distances, indices = index.search(q_embed, k=5)
+
+    context = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]
+    sources = [metadata[i]["source"] for i in indices[0] if i < len(metadata)]
+
+    prompt = f"""
+    Answer the following question using ONLY the provided research paper context.
+    If the context does not contain enough information, say you don’t know.
+
+    Question: {query}
+
+    Context:
+    {" ".join(context)}
+    """
+
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
+    resp = model.generate_content(prompt)
+
+    return {
+        "answer": resp.text.strip(),
+        "sources": list(set(sources))
+    }
