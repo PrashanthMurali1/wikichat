@@ -60,3 +60,34 @@ def chat(query: str):
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     return Response(status_code=204)  # empty response, no content
+
+@app.get("/smartqa")
+def smart_qa(query: str):
+    headers = {"User-Agent": "WikiChatApp/0.1"}
+
+    # Step 1: Ask LLM which Wikipedia page to fetch
+    prompt = f"""
+    The user asked: "{query}"
+
+    Your job: Respond ONLY with the exact title of the single Wikipedia page that best answers this question.
+    Do not explain. Do not add text. Just give the title.
+    """
+
+    routing_resp = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    page_title = routing_resp.choices[0].message.content.strip()
+    page_url = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+
+    # Step 2: Fetch Wikipedia summary for that title
+    extract_url = WIKI_SUMMARY + page_title
+    extract = requests.get(extract_url, headers=headers).json()
+    summary = extract.get("extract", "No summary available.")
+
+    # Step 3: Return answer + link
+    return {
+        "summary": summary,
+        "source": page_url
+    }
