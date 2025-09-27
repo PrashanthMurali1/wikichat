@@ -25,8 +25,15 @@ function App() {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "2rem auto", fontFamily: "Arial" }}>
-      <h1>WikiChat</h1>
+    <div
+      style={{
+        maxWidth: "700px",
+        margin: "3rem auto",
+        fontFamily: "Arial, sans-serif",
+        textAlign: "center",
+      }}
+    >
+      <h1 style={{ marginBottom: "2rem" }}>WikiChat</h1>
 
       <div style={{ display: "flex", gap: "0.5rem" }}>
         <input
@@ -39,9 +46,30 @@ function App() {
             }
           }}
           placeholder="Ask me anything..."
-          style={{ flex: 1, padding: "0.5rem" }}
+          style={{
+            flex: 1,
+            padding: "1rem",
+            fontSize: "1.1rem",
+            borderRadius: "12px",
+            border: "1px solid #ccc",
+            outline: "none",
+          }}
         />
-        <button onClick={handleSearch} disabled={loading}>
+        <button
+          onClick={handleSearch}
+          disabled={loading}
+          style={{
+            backgroundColor: loading ? "#6ba7ff" : "#007bff",
+            color: "white",
+            padding: "0 1.5rem",
+            fontSize: "1.1rem",
+            border: "none",
+            borderRadius: "12px",
+            cursor: loading ? "not-allowed" : "pointer",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            transition: "background-color 0.3s ease",
+          }}
+        >
           {loading ? "Searching..." : "Search"}
         </button>
       </div>
@@ -49,17 +77,32 @@ function App() {
       {result && (
         <div
           style={{
-            marginTop: "1.5rem",
-            padding: "1rem",
+            marginTop: "2rem",
+            padding: "1.5rem",
             border: "1px solid #ddd",
-            borderRadius: "8px",
+            borderRadius: "12px",
+            textAlign: "left",
+            backgroundColor: "#fafafa",
           }}
         >
-          <p>{result.answer}</p>
+          <p style={{ fontSize: "1.1rem", lineHeight: "1.6" }}>
+            {result.answer}
+          </p>
           {result.source && (
-            <p>
+            <p style={{ marginTop: "1rem" }}>
               <strong>Wikipedia Page: </strong>
-              <a href={result.source} target="_blank" rel="noreferrer">
+              <a
+                href={result.source}
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "#007bff", textDecoration: "none" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.textDecoration = "underline")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.textDecoration = "none")
+                }
+              >
                 {result.page_title || "View Page"}
               </a>
             </p>
