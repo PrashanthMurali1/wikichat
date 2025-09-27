@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from groq import Groq
 import google.generativeai as genai
