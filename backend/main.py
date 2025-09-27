@@ -162,8 +162,8 @@ def timeline(query: str):
 
     return {"timeline": timeline}
 
-@app.get("/rag")
-def rag(query: str):
+@app.get("/research")
+def research(query: str):
     q_embed = embedder.encode([query])
     distances, indices = index.search(q_embed, k=5)
 

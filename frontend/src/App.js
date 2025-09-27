@@ -21,7 +21,7 @@ function App() {
       } else if (activeTab === "timeline") {
         endpoint = `http://127.0.0.1:8000/timeline?query=${encodeURIComponent(query)}`;
       } else if (activeTab === "research") {
-        endpoint = `http://127.0.0.1:8000/rag?query=${encodeURIComponent(query)}`;
+        endpoint = `http://127.0.0.1:8000/research?query=${encodeURIComponent(query)}`;
       }
 
       const res = await fetch(endpoint);
