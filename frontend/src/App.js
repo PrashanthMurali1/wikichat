@@ -2,23 +2,23 @@ import React, { useState } from "react";
 
 function App() {
   const [query, setQuery] = useState("");
-  const [answer, setAnswer] = useState(null);
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
     if (!query) return;
     setLoading(true);
-    setAnswer(null);
+    setResult(null);
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/smartqa?query=${encodeURIComponent(query)}`
+        `http://127.0.0.1:8000/qa_with_page?query=${encodeURIComponent(query)}`
       );
       const data = await res.json();
-      setAnswer(data);
+      setResult(data);
     } catch (err) {
       console.error(err);
-      setAnswer({ summary: "Error fetching answer", source: "" });
+      setResult({ answer: "Error fetching answer", source: "" });
     } finally {
       setLoading(false);
     }
@@ -33,6 +33,11 @@ function App() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
           placeholder="Ask me anything..."
           style={{ flex: 1, padding: "0.5rem" }}
         />
@@ -41,13 +46,21 @@ function App() {
         </button>
       </div>
 
-      {answer && (
-        <div style={{ marginTop: "1.5rem", padding: "1rem", border: "1px solid #ddd", borderRadius: "8px" }}>
-          <p>{answer.summary}</p>
-          {answer.source && (
+      {result && (
+        <div
+          style={{
+            marginTop: "1.5rem",
+            padding: "1rem",
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+          }}
+        >
+          <p>{result.answer}</p>
+          {result.source && (
             <p>
-              <a href={answer.source} target="_blank" rel="noreferrer">
-                View Wikipedia Page
+              <strong>Wikipedia Page: </strong>
+              <a href={result.source} target="_blank" rel="noreferrer">
+                {result.page_title || "View Page"}
               </a>
             </p>
           )}

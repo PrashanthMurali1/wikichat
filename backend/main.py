@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import requests
 from groq import Groq
+import google.generativeai as genai
 import os
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -17,6 +18,9 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 WIKI_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/"
+
+# Configure Gemini
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def search_wikipedia(query: str):
     params = {
@@ -98,5 +102,46 @@ def smart_qa(query: str):
     # Step 3: Return answer + link
     return {
         "summary": summary,
+        "source": page_url
+    }
+
+@app.get("/qa_with_page")
+def qa_with_page(query: str):
+    # Step 1: Ask Gemini to answer + provide page title
+    prompt = f"""
+    The user asked: "{query}"
+
+    Your job:
+    1. Answer the question clearly in a paragraph or two.
+    2. On a new line, respond with the EXACT Wikipedia page title that best matches the answer.
+
+    Format strictly like this:
+    ANSWER: <your answer>
+    PAGE: <Wikipedia page title>
+    """
+
+    model = genai.GenerativeModel("gemini-2.5-flash")
+    resp = model.generate_content(prompt)
+
+    content = resp.text.strip()
+
+    # Step 2: Parse LLM response
+    answer = None
+    page_title = None
+    for line in content.splitlines():
+        if line.startswith("ANSWER:"):
+            answer = line.replace("ANSWER:", "").strip()
+        elif line.startswith("PAGE:"):
+            page_title = line.replace("PAGE:", "").strip()
+
+    if not page_title:
+        return {"error": "Gemini did not return a Wikipedia page title"}
+
+    # Step 3: Build Wikipedia link
+    page_url = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+
+    return {
+        "answer": answer,
+        "page_title": page_title,
         "source": page_url
     }
