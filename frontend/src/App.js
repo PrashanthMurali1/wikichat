@@ -28,11 +28,11 @@ function App() {
       const data = await res.json();
 
       if (activeTab === "wikichat") {
-        setWikiHistory((prev) => [...prev, { query, result: data }]);
+        setWikiHistory((prev) => [{ query, result: data }, ...prev]);
       } else if (activeTab === "timeline") {
-        setTimelineHistory((prev) => [...prev, { query, result: data }]);
+        setTimelineHistory((prev) => [{ query, result: data }, ...prev]);
       } else if (activeTab === "research") {
-        setResearchHistory((prev) => [...prev, { query, result: data }]);
+        setResearchHistory((prev) => [{ query, result: data }, ...prev]);
       }
     } catch (err) {
       console.error(err);
