@@ -2,8 +2,17 @@ from fastapi import FastAPI
 import requests
 from groq import Groq
 import os
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 WIKI_API = "https://en.wikipedia.org/w/api.php"
