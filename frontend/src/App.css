@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-  max-width: 700px;
+  max-width: 800px;
   margin: 3rem auto;
   text-align: center;
 }
@@ -14,6 +14,26 @@ body {
 h1 {
   margin-bottom: 2rem;
   color: #333;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #eaeaea;
+  font-weight: bold;
+}
+
+.tab.active {
+  background-color: #007bff;
+  color: white;
 }
 
 .search-box {
@@ -28,7 +48,6 @@ input[type="text"] {
   border-radius: 12px;
   border: 1px solid #ccc;
   outline: none;
-  transition: border-color 0.2s ease;
 }
 
 input[type="text"]:focus {
@@ -36,7 +55,6 @@ input[type="text"]:focus {
 }
 
 button {
-  background-color: #007bff;
   color: white;
   padding: 0 1.5rem;
   font-size: 1.1rem;
@@ -47,13 +65,30 @@ button {
   transition: background-color 0.3s ease;
 }
 
-button:disabled {
+button.blue {
+  background-color: #007bff;
+}
+
+button.blue:hover {
+  background-color: #0056b3;
+}
+
+button.blue:disabled {
   background-color: #6ba7ff;
   cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
-  background-color: #0056b3;
+button.red {
+  background-color: #dc3545;
+}
+
+button.red:hover {
+  background-color: #a71d2a;
+}
+
+button.red:disabled {
+  background-color: #f28b95;
+  cursor: not-allowed;
 }
 
 .result-box {
@@ -66,16 +101,19 @@ button:hover:not(:disabled) {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.result-box p {
+.timeline {
+  text-align: left;
+  margin-top: 2rem;
+}
+
+.timeline-item {
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
+  border-left: 3px solid #dc3545;
+}
+
+.timeline-item h3 {
+  margin: 0;
   font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-.result-box a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.result-box a:hover {
-  text-decoration: underline;
+  color: #dc3545;
 }

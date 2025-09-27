@@ -103,3 +103,48 @@ def qa(query: str, engine: str = "gemini"):
 
     else:
         return {"error": f"Unsupported engine '{engine}'. Use 'groq' or 'gemini'."}
+
+@app.get("/timeline")
+def timeline(query: str):
+    prompt = f"""
+    The user asked: "{query}"
+
+    Your task: Build a clear, chronological timeline that explains the historical progression. 
+    For each step, include:
+    - A year (or range of years)
+    - A 1–2 sentence description of the event
+    - The exact Wikipedia page title most relevant to that event
+
+    Format strictly as:
+    YEAR: <year or range>
+    EVENT: <short description>
+    PAGE: <Wikipedia page title>
+
+    Repeat this format for each event in order.
+    """
+
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
+    resp = model.generate_content(prompt)
+
+    content = resp.text.strip()
+
+    timeline = []
+    current = {}
+
+    for line in content.splitlines():
+        if line.startswith("YEAR:"):
+            if current:  # save previous
+                timeline.append(current)
+                current = {}
+            current["year"] = line.replace("YEAR:", "").strip()
+        elif line.startswith("EVENT:"):
+            current["event"] = line.replace("EVENT:", "").strip()
+        elif line.startswith("PAGE:"):
+            page_title = line.replace("PAGE:", "").strip()
+            page_url = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
+            current["source"] = page_url
+
+    if current:  # last one
+        timeline.append(current)
+
+    return {"timeline": timeline}
